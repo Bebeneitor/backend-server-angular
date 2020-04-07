@@ -8,24 +8,33 @@ var app = express();
 var Usuario = require("../models/usuario");
 
 // ============================================
-// Obtener todos los usuarios
+// GET Obtener todos los usuarios
 // ============================================
 app.get("/", (request, response, next) => {
-  Usuario.find({}, "nombre email img role").exec((error, usuarios) => {
-    if (error) {
-      return response.status(500).json({
-        ok: "false",
-        message: "Error cargando usuario",
-        errors: error,
-      });
-    }
+  var desde = request.query.desde || 0;
+  desde = Number(desde);
 
-    response.status(200).json({
-      ok: "true",
-      message: "Usuarios",
-      usuarios: usuarios,
+  Usuario.find({}, "nombre email img role")
+    .skip(desde)
+    .limit(10)
+    .exec((error, usuarios) => {
+      if (error) {
+        return response.status(500).json({
+          ok: "false",
+          message: "Error cargando usuario",
+          errors: error,
+        });
+      }
+
+      Usuario.count({}, (error, conteo) => {
+        response.status(200).json({
+          ok: "true",
+          message: "Usuarios",
+          usuarios: usuarios,
+          totalUsuarios: conteo,
+        });
+      });
     });
-  });
 });
 
 // ============================================

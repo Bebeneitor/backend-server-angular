@@ -1,5 +1,6 @@
 var mongoose = require("mongoose");
 var uniqueValidator = require("mongoose-unique-validator");
+
 var Schema = mongoose.Schema;
 
 var rolesValidos = {
@@ -12,10 +13,10 @@ var usuarioSchema = new Schema({
   email: {
     type: String,
     unique: true,
-    required: [true, "El email es necesario"],
+    required: [true, "El correo es necesario"],
   },
   password: { type: String, required: [true, "La contraseña es necesaria"] },
-  password: { type: String, required: [false] },
+  img: { type: String, required: false },
   role: {
     type: String,
     required: true,
@@ -24,8 +25,6 @@ var usuarioSchema = new Schema({
   },
 });
 
-usuarioSchema.plugin(uniqueValidator, {
-  message: "{PATH} debe de ser unico",
-});
+usuarioSchema.plugin(uniqueValidator, { message: "{PATH} debe de ser único" });
 
 module.exports = mongoose.model("Usuario", usuarioSchema);
