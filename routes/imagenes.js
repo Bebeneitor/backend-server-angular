@@ -10,6 +10,7 @@ app.get("/:tipo/:img", (request, response, next) => {
   var img = request.params.img;
 
   var pathImagen = path.resolve(__dirname, `../uploads/${tipo}/${img}`);
+
   if (fs.existsSync(pathImagen)) {
     response.sendFile(pathImagen);
   } else {

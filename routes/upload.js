@@ -14,6 +14,7 @@ app.use(fileupload());
 app.put("/:tipo/:id", (request, response) => {
   var tipo = request.params.tipo;
   var id = request.params.id;
+
   var tiposColeccion = ["medicos", "usuarios", "hospitales"];
 
   // Validar coleccion
@@ -122,8 +123,9 @@ function subirPorTipo(tipo, id, nombreArchivo, path, response) {
           });
         }
         var pathViejo = "./uploads/medicos/" + medico.img;
+
         // Si existe elimina la imagen anterior
-        if (fs.existsSync(pathViejo)) {
+        if (medico.img.length > 0 && fs.existsSync(pathViejo)) {
           fs.unlinkSync(pathViejo);
         }
 

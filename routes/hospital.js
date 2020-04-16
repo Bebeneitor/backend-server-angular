@@ -27,10 +27,46 @@ app.get("/", (request, response) => {
         });
       }
 
+      Hospital.count({}, (error, conteo) => {
+        response.status(200).json({
+          ok: "true",
+          message: "Hospitales",
+          hospitales: hospitales,
+          totalHospitales: conteo,
+        });
+      });
+    });
+});
+
+// ============================================
+// GET Obtener hospital por id
+// ============================================
+app.get("/:id", (request, response) => {
+  const id = request.params.id;
+
+  Hospital.findById(id)
+    .populate("usuario", "nombre")
+    .exec((error, hospital) => {
+      if (error) {
+        return response.status(500).json({
+          ok: "false",
+          message: "Error al buscar hospital",
+          errors: error,
+        });
+      }
+
+      if (!hospital) {
+        return response.status(400).json({
+          ok: "false",
+          message: "El hospital con el Id:" + id + " no existe.",
+          errors: { message: "El hospital no existe" },
+        });
+      }
+
       response.status(200).json({
         ok: "true",
-        message: "hospitales",
-        hospitales: hospitales,
+        message: "hospital",
+        hospitales: hospital,
       });
     });
 });
@@ -40,6 +76,7 @@ app.get("/", (request, response) => {
 // ============================================
 app.post("/", mdAutenticacion.verificaToken, (request, response) => {
   var body = request.body;
+
   var hospital = new Hospital({
     nombre: body.nombre,
     img: body.img,
@@ -50,7 +87,7 @@ app.post("/", mdAutenticacion.verificaToken, (request, response) => {
     if (error) {
       return response.status(400).json({
         ok: "false",
-        message: "Error creando hospotal",
+        message: "Error creando hospital",
         errors: error,
       });
     }
@@ -90,7 +127,7 @@ app.put("/:id", mdAutenticacion.verificaToken, (request, response) => {
 
     hospital.nombre = body.nombre;
     hospital.img = body.img;
-    hospital.usuario.request.usuario;
+    hospital.usuario = request.usuario;
 
     hospital.save((error, hospitalGuardado) => {
       if (error) {
