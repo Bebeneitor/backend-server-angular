@@ -40,47 +40,51 @@ app.get("/", (request, response, next) => {
 // ============================================
 // PUT Actualizar usuario
 // ============================================
-app.put("/:id", mdAutenticacion.verificaToken, (request, response) => {
-  var body = request.body;
-  var id = request.params.id;
+app.put(
+  "/:id",
+  [mdAutenticacion.verificaToken, mdAutenticacion.varificaMySelf],
+  (request, response) => {
+    var body = request.body;
+    var id = request.params.id;
 
-  Usuario.findById(id, (error, usuario) => {
-    if (error) {
-      return response.status(500).json({
-        ok: "false",
-        message: "Error al buscar usuario",
-        errors: error,
-      });
-    }
-
-    if (!usuario) {
-      return response.status(400).json({
-        ok: "false",
-        message: "El usuario con el id: " + id + " no existe",
-        errors: { message: "No existe un usuario con ese Id." },
-      });
-    }
-
-    usuario.nombre = body.nombre;
-    usuario.email = body.email;
-    usuario.role = body.role;
-
-    usuario.save((error, usuarioGuardado) => {
+    Usuario.findById(id, (error, usuario) => {
       if (error) {
-        return response.status(400).json({
+        return response.status(500).json({
           ok: "false",
-          message: "Error al actualizar usuario",
+          message: "Error al buscar usuario",
           errors: error,
         });
       }
-      usuarioGuardado.password = ":)";
-      response.status(200).json({
-        ok: "true",
-        usuario: usuarioGuardado,
+
+      if (!usuario) {
+        return response.status(400).json({
+          ok: "false",
+          message: "El usuario con el id: " + id + " no existe",
+          errors: { message: "No existe un usuario con ese Id." },
+        });
+      }
+
+      usuario.nombre = body.nombre;
+      usuario.email = body.email;
+      usuario.role = body.role;
+
+      usuario.save((error, usuarioGuardado) => {
+        if (error) {
+          return response.status(400).json({
+            ok: "false",
+            message: "Error al actualizar usuario",
+            errors: error,
+          });
+        }
+        usuarioGuardado.password = ":)";
+        response.status(200).json({
+          ok: "true",
+          usuario: usuarioGuardado,
+        });
       });
     });
-  });
-});
+  }
+);
 // ============================================
 // POST Crear un usuarios
 // ============================================
@@ -114,31 +118,35 @@ app.post("/", (request, response) => {
 // ============================================
 // DELETE Eliminar usuario
 // ============================================
-app.delete("/:id", mdAutenticacion.verificaToken, (request, response) => {
-  var id = request.params.id;
+app.delete(
+  "/:id",
+  [mdAutenticacion.verificaToken, mdAutenticacion.varificaAdmin],
+  (request, response) => {
+    var id = request.params.id;
 
-  Usuario.findByIdAndRemove(id, (error, usuarioBorrado) => {
-    if (error) {
-      return response.status(500).json({
-        ok: "false",
-        message: "Error al borrar usuario",
-        errors: error,
+    Usuario.findByIdAndRemove(id, (error, usuarioBorrado) => {
+      if (error) {
+        return response.status(500).json({
+          ok: "false",
+          message: "Error al borrar usuario",
+          errors: error,
+        });
+      }
+
+      if (!usuarioBorrado) {
+        return response.status(400).json({
+          ok: "false",
+          message: "No existe usuario con ese ID",
+          errors: { message: "Id de usuario no existe" },
+        });
+      }
+
+      response.status(200).json({
+        ok: "true",
+        usuario: usuarioBorrado,
       });
-    }
-
-    if (!usuarioBorrado) {
-      return response.status(400).json({
-        ok: "false",
-        message: "No existe usuario con ese ID",
-        errors: { message: "Id de usuario no existe" },
-      });
-    }
-
-    response.status(200).json({
-      ok: "true",
-      usuario: usuarioBorrado,
     });
-  });
-});
+  }
+);
 
 module.exports = app;

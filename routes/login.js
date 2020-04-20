@@ -12,9 +12,22 @@ var Usuario = require("../models/usuario");
 const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(CLIENT_ID);
 
+var mdAutenticacion = require("../middleware/autenticacion");
+
 // =====================================
-// Validacion Normal
+// Renovar token
 // =====================================
+app.get("/renovartoken", mdAutenticacion.verificaToken, (request, response) => {
+  //Creado por google regresa token
+  var token = JWT.sign({ usuario: request.usuario }, SEED, {
+    expiresIn: 14400,
+  });
+
+  return response.status(200).json({
+    ok: true,
+    token: token,
+  });
+});
 
 // =====================================
 // Validacion Google
@@ -82,6 +95,7 @@ app.post("/google", async (request, response) => {
           usuario: usuarioDB,
           token: token,
           id: usuarioDB._id,
+          menu: obtenerMenu(usuarioDB.role),
         });
       }
     } else {
@@ -114,11 +128,16 @@ app.post("/google", async (request, response) => {
           mensaje: "Usuario generado correctamente",
           usuario: usuario,
           token: token,
+          menu: obtenerMenu(usuario.role),
         });
       });
     }
   });
 });
+
+// =====================================
+// Validacion Normal
+// =====================================
 
 app.post("/", (request, response) => {
   var body = request.body;
@@ -160,8 +179,42 @@ app.post("/", (request, response) => {
       usuario: usuarioBD,
       token: token,
       id: usuarioBD._id,
+      menu: obtenerMenu(usuarioBD.role),
     });
   });
 });
+
+// =====================================
+// Menu
+// =====================================
+function obtenerMenu(ROLE) {
+  var menu = [
+    {
+      titulo: "Principal",
+      icono: "mdi mdi-gauge",
+      submenu: [
+        { titulo: "Dashboard", url: "/dashboard" },
+        { titulo: "Progress", url: "/progress" },
+        { titulo: "Graficas", url: "/graficas1" },
+        { titulo: "Promesas", url: "/promesas" },
+        { titulo: "RxJs", url: "/rxjs" },
+      ],
+    },
+    {
+      titulo: "Mantenimientos",
+      icono: "mdi mdi-folder-lock-open",
+      submenu: [
+        { titulo: "Hospitales", url: "/hospitales" },
+        { titulo: "Medicos", url: "/medicos" },
+      ],
+    },
+  ];
+
+  if (ROLE === "ADMIN_ROLE") {
+    menu[1].submenu.unshift({ titulo: "Usuarios", url: "/usuarios" });
+  }
+
+  return menu;
+}
 
 module.exports = app;
